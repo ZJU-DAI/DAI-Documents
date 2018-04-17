@@ -20,7 +20,7 @@ v3: https://pjreddie.com/media/files/papers/YOLOv3.pdf
 主页:https://pjreddie.com/darknet/yolo/
 
 
-##吴超老师学习资料
+## 吴超老师学习资料
 
 1.Tensorflow课程： 
 
