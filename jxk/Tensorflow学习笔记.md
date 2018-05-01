@@ -1,6 +1,6 @@
 # Tensorflow个人学习笔记
 
-## Lecture1
+## Lecture 1
 
 每个TF程序包括两个过程
 
@@ -47,7 +47,7 @@ with tf.Session() as sess: #在session中执行图中的operation
 
 ## Lecture 2
 
-###Constants(常量)
+### Constants(常量)
 
 ```python
 tf.constants(
@@ -194,3 +194,8 @@ Inference:Y_predicted=softmax(X*w+b)
 
 Cross entropy loss = -log(Y_predicted)
 
+##Lecture 5
+
+Word2Vec
+
+详见Github
