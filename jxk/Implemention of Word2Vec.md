@@ -64,7 +64,7 @@ loss = tf.reduce_mean(tf.nn.nce_loss(weights=nce_weight,
 optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(loss)
 ```
 
-##Phase 2: Execute the computation 
+## Phase 2: Execute the computation 
 
 ```python
 with tf.Session() as sess:
