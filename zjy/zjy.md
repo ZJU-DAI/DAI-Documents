@@ -7,9 +7,9 @@
 * 3 复现重采样特征+LSTM(Bunk的论文)。
 
 ### 18.0423-0502 第二周进度
-* 1 tensorflow课程学至lesson09.挣扎style—transfer
-* 2 bunk论文，深度学习模型的框架。
-* 3 cs231N，补了一周关于CNN和RNN的课和LSTM
+* 1 tensorflow课程学至lesson09.挣扎style_transfer
+* 2 bunk论文的LSTM模型。
+* 3 cs231N，补了一周关于CNN和RNN的课
 
 ### 未解决问题
 * 1 bunk论文。
