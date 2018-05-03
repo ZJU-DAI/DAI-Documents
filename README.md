@@ -32,9 +32,9 @@ http://web.stanford.edu/class/cs20si/
 https://arxiv.org/pdf/1701.00160.pdf
 
 
-##paper
+## paper
 
-1.resampling detect + CV :<br>
+### 1.resampling detect + CV :
 Mahdian, B., & Saic, S. (2008). Blind authentication using periodic properties of interpolation.[pdf] (https://github.com/Ereebay/Deep-Learning-Documents/blob/master/paper/Mahdian_Blind%20authentication%20using%20periodic%20properties%20of%20interpolation.pdf)
 
 Popescu, A. C., & Farid, H. (2005). Exposing Digital Fresidualorgeries bresidualy Detecting Traces of Resampling.[pdf](https://github.com/Ereebay/Deep-Learning-Documents/blob/master/paper/Popescu_Exposing%20Digital%20Fresidualorgeries%20bresidualy%20Detecting%20Traces%20of%20Resampling.pdf)
