@@ -87,14 +87,14 @@ def parse_data(path, dataset, flatten):
     if dataset != 'train' and dataset != 't10k':
         raise NameError('dataset must be train or t10k')
 
-    label_file = os.path.join(path, dataset + '-labels-idx1-ubyte')
+    label_file = os.path.join(path, dataset + '-labels.idx1-ubyte')
     with open(label_file, 'rb') as file:
         _, num = struct.unpack(">II", file.read(8))
         labels = np.fromfile(file, dtype=np.int8) #int8
         new_labels = np.zeros((num, 10))
         new_labels[np.arange(num), labels] = 1
     
-    img_file = os.path.join(path, dataset + '-images-idx3-ubyte')
+    img_file = os.path.join(path, dataset + '-images.idx3-ubyte')
     with open(img_file, 'rb') as file:
         _, num, rows, cols = struct.unpack(">IIII", file.read(16))
         imgs = np.fromfile(file, dtype=np.uint8).reshape(num, rows, cols) #uint8
@@ -120,8 +120,8 @@ def read_mnist(path, flatten=True, num_train=55000):
 
 def get_mnist_dataset(batch_size):
     # Step 1: Read in data
-    mnist_folder = 'data/mnist'
-    download_mnist(mnist_folder)
+    mnist_folder = 'MNIST_DATA'
+    #download_mnist(mnist_folder)
     train, val, test = read_mnist(mnist_folder, flatten=False)
 
     # Step 2: Create datasets and iterator
