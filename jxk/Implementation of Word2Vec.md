@@ -1,4 +1,4 @@
-# Implention of Word2Vec
+# Implentation of Word2Vec
 
 ## Phase 1: Assemble the Graph
 
