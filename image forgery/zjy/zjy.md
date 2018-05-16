@@ -6,6 +6,14 @@
 * 2 论文精读2-3篇
 * 3 复现重采样特征+LSTM(Bunk的论文)。
 
+### 18.0502-0516 三四周进度
+* 1 bunk论文的LSTM模型-图片-过滤器-EM算法获得-convRes两层-LSTM
+* 2 EM算法
+* 3 dataset-CASIA
+* 4 convRes
+
+
+
 ### 18.0423-0502 第二周进度
 * 1 tensorflow课程学至lesson09.挣扎style_transfer
 * 2 bunk论文的LSTM模型。
