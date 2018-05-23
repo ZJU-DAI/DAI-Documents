@@ -2,18 +2,24 @@
 import tensorflow as tf
 from tensorflow.contrib import rnn
 
-import train
+import ifd_train
 #define parameters
 lstm_hidden_size = 64
 lstm_block_size = 8
+lstm_layer_num = 3
+keep_prob = 0.9
+
+def lstm_cell(hidden_size, keep_prob):
+	cell = rnn.BasicLSTMCell(hidden_size, reuse=tf.get_variable_scope().reuse)
+	return rnn.DropoutWrapper(cell, output_keep_prob=keep_prob)
 
 #define the inference modle
 def inference(input_tensor, n_classes, TRAIN_FLAG):
 
-	batch_size = train.BATCH_SIZE
-
+	batch_size = ifd_train.BATCH_SIZE
+	input = tf.reshape(input_tensor, [-1, ifd_train.PATCH_SIZE, ifd_train.PATCH_SIZE, ifd_train.INCHANNEL])
 	with tf.variable_scope('conv1'):
-		conv1 = tf.layers.conv2d(inputs=input_tensor, filters=64, kernel_size=[5, 5], trainable=TRAIN_FLAG,
+		conv1 = tf.layers.conv2d(inputs=input, filters=64, kernel_size=[5, 5], trainable=TRAIN_FLAG,
 		                         padding='SAME', activation=tf.nn.relu, name='conv1')
 		print('conv1 output shape: {}'.format(conv1.get_shape().as_list()))
 
@@ -30,8 +36,8 @@ def inference(input_tensor, n_classes, TRAIN_FLAG):
 		for i in range(batch_size):
 			with tf.variable_scope(str(i)+'_lstm'):
 				block = fc2[i]
-				lstm_cell = rnn.BasicLSTMCell(num_units=lstm_hidden_size, forget_bias=1.0)
-				mlstm_cell = rnn.MultiRNNCell([lstm_cell], state_is_tuple=True)
+				#lstm_cell = rnn.BasicLSTMCell(num_units=lstm_hidden_size, forget_bias=1.0)
+				mlstm_cell = rnn.MultiRNNCell([lstm_cell(lstm_hidden_size, keep_prob)for _ in range(lstm_layer_num)], state_is_tuple=True)
 				init_state = mlstm_cell.zero_state(64, dtype=tf.float32)
 				lstm_ouput, state = tf.nn.dynamic_rnn(mlstm_cell, inputs=block, initial_state=init_state,
 				                                      time_major=False)
