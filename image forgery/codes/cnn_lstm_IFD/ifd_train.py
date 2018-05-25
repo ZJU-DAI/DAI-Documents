@@ -13,6 +13,7 @@ IMG_SIZE = 586    #每张图片的大小
 STRIDE = 16      #图片中提取patch的strides
 BATCH_SIZE = 64  #每批数据中patch数
 PATCH_SIZE = 64
+BLOCK_SIZE = 8
 INCHANNEL = 3
 THRESHOLD = 0.0005
 N_CLASSES = 2
@@ -20,7 +21,7 @@ LEARNING_RATE_BASE = 0.8
 lEARNING_RATE_DECAY = 0.99
 
 LOSS_OUT_STEPS = 100   #间隔一定步数后输出一次loss，监控模型
-SAVE_NUM = 24   #间隔多少张图片后，保存一次模型
+SAVE_NUM = 10  #间隔多少张图片后，保存一次模型
 
 VALIDATION_PERCENTAGE = 10
 TEST_PERCENTAGE = 10
@@ -59,7 +60,6 @@ def train():
 
 	with tf.name_scope('loss'):
 		label_one_hot = tf.one_hot(labels, depth=N_CLASSES, on_value=1)
-		print(labels.shape, label_one_hot.shape)
 		entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=label_one_hot, logits=logits)
 		#entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.argmax(labels, 1), logits=logits)
 		loss = tf.reduce_mean(entropy, name='loss')
@@ -76,7 +76,7 @@ def train():
 
 	with tf.name_scope('summaries'):
 		tf.summary.scalar('loss', loss)
-		#tf.summary.scalar('accuracy', accuracy)
+		tf.summary.scalar('accuracy', accuracy)
 		tf.summary.histogram('histogram loss', loss)
 		summary_op = tf.summary.merge_all()
 
@@ -85,6 +85,7 @@ def train():
 	saver = tf.train.Saver()
 	writer = tf.summary.FileWriter(GRAPH_PATH, tf.get_default_graph())
 	with tf.Session() as sess:
+		utils.safe_mkdir('checkpoints')
 		utils.safe_mkdir(MODEL_SAVE_PATH)
 		sess.run(tf.global_variables_initializer())
 
@@ -126,7 +127,7 @@ def train():
 			# each SAVE_NUM epoches :calculate the accurancy on the validation data, and save the model
 			if (epoch + 1) % SAVE_NUM == 0:
 				print('Average loss at epoch {0}: {1}'.format(epoch, total_loss / train_step))
-				print('Took: {0} seconds'.format(time.time() - start_time))
+				print('Took: {0} seconds for one epoch'.format(time.time() - start_time))
 				saver.save(sess, save_path=os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=step)
 				
 				#eval
@@ -144,14 +145,13 @@ def train():
 				
 					acc_batch, summaries = sess.run([accuracy, summary_op],
 					                           feed_dict={patch: patch_vali[start: end],
-					                                      labels: label_vali[start:end]})
-					acc_batch /= BATCH_SIZE
+					                                      labels: label_vali[start: end]})
 					writer.add_summary(summaries, global_step=step)
 					
 					total_correct_preds += acc_batch
 					start += BATCH_SIZE
 					end += BATCH_SIZE
-				print('Accuracy at epoch {0}: {1} '.format(epoch, total_correct_preds / train_step))
+				print('Accuracy at epoch {0}: {1} '.format(epoch, total_correct_preds / (train_step*BLOCK_SIZE)))
 
 					
 				
