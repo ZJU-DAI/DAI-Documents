@@ -1,7 +1,7 @@
 # 对图像进行语义性篡改的实现
 ## 网络细节
 
-除了文本编码过程中未采用stackgan中的condition augmention，其他结构均采用了论文中的设计。训练过程中数据集采用的Oxford102。
+除了文本编码过程中未采用stackgan中的condition augmention，其他结构均采用了论文中的设计。训练过程中数据集采用的Oxford102。
 
 ## 原图
 
@@ -27,11 +27,11 @@ this flower has petals that are blue and white.
                       
 these white flowers have petals that start off white in color and end in a white towards the tips.
 
-## 300次epcho后的结果
+## 300次epcho后的结果
 
 ![img](./image/train_300.png)
 
-## epcho 0 
+## epcho 0 
 
 ![img](./image/train_00.png)
 
