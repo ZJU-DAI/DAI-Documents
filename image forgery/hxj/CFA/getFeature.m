@@ -1,30 +1,22 @@
-% Copyright (C) 2011 Signal Processing and Communications Laboratory (LESC),       
-% Dipartimento di Elettronica e Telecomunicazioni - Università di Firenze                        
-% via S. Marta 3 - I-50139 - Firenze, Italy                   
-% 
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% 
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-function [statistics] = getFeature(map,Bayer,Nb)
 
-% Proposed feature to localize CFA artifacts
+function [statistics] = getFeature(map,Bayer)
 
-pattern = kron(ones(Nb/2,Nb/2),Bayer);
+% logical °ÑËùÓĞµÄ·ÇÁã±ä³É1 Áã±ä³ÉÂß¼­0
+% sigma() ÏÂ±êË÷Òı
+% prod ¼ÆËãÊı×éÔªËØµÄÁ¬³Ë»ı
+% ´æÔÚCFA²åÖµÊ±£¬²É¼¯ĞÅºÅÇø¿éÉÏµÄ·½²î±È²åÖµĞÅºÅÇø¿éÉÏµÄ·½²îÒª´ó
+% ²»´æÔÚÊ±£¬·½²îÔòÃ»ÓĞÇø±ğ
 
-func = @(sigma) (prod(sigma(logical(pattern)))/(prod(sigma(not(logical(pattern))))));
+% dimensione of statistics
+Nb = 2;
+% func ÔÚÄ£°æBayerÏÂ ²ÉÑùĞÅºÅµÄÁ¬³Ë»ı/²åÖµĞÅºÅµÄÁ¬³Ë»ı
+func = @(sigma) (prod(sigma(logical(Bayer))))/(prod(sigma(not(logical(Bayer)))));
 
+
+% blkproc ¶ÔÍ¼Ïñ½øĞĞÒÔ[nb, nb]Îªµ¥Î»·Ö¿é´¦Àí
 statistics = blkproc(map,[Nb Nb],func);
 
 return
