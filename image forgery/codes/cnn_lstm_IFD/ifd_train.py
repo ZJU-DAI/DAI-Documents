@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+#import os
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import time
 import tensorflow as tf
 import numpy as np
@@ -8,9 +10,13 @@ import numpy as np
 import ifd_inference as inf
 import utils
 
+#set GPU
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.6
+
 #define parameters
-IMG_SIZE = 586    #每张图片的大小
-STRIDE = 16      #图片中提取patch的strides
+IMG_SIZE = 380    #每张图片的大小
+STRIDE = 8      #图片中提取patch的strides
 BATCH_SIZE = 64  #每批数据中patch数
 PATCH_SIZE = 64
 BLOCK_SIZE = 8
@@ -28,8 +34,8 @@ TEST_PERCENTAGE = 10
 
 TRAIN_FLAG = False
 #INPUT_PATH = 'E:\\tf\\create_tfRecord\\npy-16\\'
-INPUT_DATA = 'npy\\0523_IMD.npy'
-MODEL_SAVE_PATH ='checkpoints/cnn_lstm_IFD_16'
+INPUT_DATA = 'npy/0525_IMD-586.npy'
+MODEL_SAVE_PATH ='checkpoints/cnn_lstm_IFD_8'
 MODEL_NAME = 'model.ckpt'
 GRAPH_PATH = './graphs/cnn_lstm_IFD'
 
@@ -84,7 +90,7 @@ def train():
 
 	saver = tf.train.Saver()
 	writer = tf.summary.FileWriter(GRAPH_PATH, tf.get_default_graph())
-	with tf.Session() as sess:
+	with tf.Session(config=config) as sess:
 		utils.safe_mkdir('checkpoints')
 		utils.safe_mkdir(MODEL_SAVE_PATH)
 		sess.run(tf.global_variables_initializer())
@@ -126,7 +132,7 @@ def train():
 			
 			# each SAVE_NUM epoches :calculate the accurancy on the validation data, and save the model
 			if (epoch + 1) % SAVE_NUM == 0:
-				print('Average loss at epoch {0}: {1}'.format(epoch, total_loss / train_step))
+				print('Average loss at epoch {0}: {1}'.format(epoch, total_loss / (train_step*PATCH_SIZE)))
 				print('Took: {0} seconds for one epoch'.format(time.time() - start_time))
 				saver.save(sess, save_path=os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=step)
 				
@@ -151,7 +157,7 @@ def train():
 					total_correct_preds += acc_batch
 					start += BATCH_SIZE
 					end += BATCH_SIZE
-				print('Accuracy at epoch {0}: {1} '.format(epoch, total_correct_preds / (train_step*BLOCK_SIZE)))
+				print('Accuracy at epoch {0}: {1} '.format(epoch, total_correct_preds / (train_step*PATCH_SIZE)))
 
 					
 				

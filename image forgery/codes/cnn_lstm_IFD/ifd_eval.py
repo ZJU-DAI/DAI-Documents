@@ -71,7 +71,7 @@ def eval(INPUT_DATA):
 							end += ifd_train.BATCH_SIZE
 						print('Average Accuracy at step {0}: {1}'.format(epoch, acc_total_epoch / test_step))
 						acc_total += acc_total_epoch
-					print('Average Accuracy at step {0}: {1}'.format(global_step, acc_total / test_EPOCH))
+					print('Average Accuracy at step {0}: {1}'.format(global_step, acc_total / (test_EPOCH*test_step)))
 				else:
 					print('No checkpoint file found')
 			return
