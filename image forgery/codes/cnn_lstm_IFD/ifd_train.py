@@ -15,13 +15,13 @@ config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.6
 
 #define parameters
-IMG_SIZE = 380    #每张图片的大小
+IMG_SIZE = 380   #每张图片的大小
 STRIDE = 8      #图片中提取patch的strides
 BATCH_SIZE = 64  #每批数据中patch数
 PATCH_SIZE = 64
 BLOCK_SIZE = 8
 INCHANNEL = 3
-THRESHOLD = 0.0005
+THRESHOLD = 0.125
 N_CLASSES = 2
 LEARNING_RATE_BASE = 0.8
 lEARNING_RATE_DECAY = 0.99
@@ -34,10 +34,11 @@ TEST_PERCENTAGE = 10
 
 TRAIN_FLAG = False
 #INPUT_PATH = 'E:\\tf\\create_tfRecord\\npy-16\\'
-INPUT_DATA = 'npy/0525_IMD-586.npy'
+INPUT_DATA = 'npy/0601_IMD.npy'
 MODEL_SAVE_PATH ='checkpoints/cnn_lstm_IFD_8'
 MODEL_NAME = 'model.ckpt'
 GRAPH_PATH = './graphs/cnn_lstm_IFD'
+OUTFILE = 'record/record.txt'
 
 
 def train():
@@ -110,11 +111,12 @@ def train():
 			
 			start = 0
 			end = BATCH_SIZE
-			
+			m_idx = 0 #统计一下每张图中被篡改过patch的数量
 			# load data
-			patch_data, label_data= utils.get_patch(training_imgs[epoch], training_labels[epoch],
-			                                        PATCH_SIZE, STRIDE, IMG_SIZE, INCHANNEL, THRESHOLD)
+			patch_data, label_data, m_idx= utils.get_patch(training_imgs[epoch], training_labels[epoch],
+			                                        PATCH_SIZE, STRIDE, IMG_SIZE, INCHANNEL, THRESHOLD, m_idx)
 			N_PATCH = patch_data.shape[0]
+			print('Patch num: {0} Modified Patch num: {1}'.format(label_data.shape, m_idx))
 			train_step = int(N_PATCH / BATCH_SIZE)
 			#train with each patch
 			for batch_idx in range(train_step):
@@ -136,32 +138,6 @@ def train():
 				print('Took: {0} seconds for one epoch'.format(time.time() - start_time))
 				saver.save(sess, save_path=os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=step)
 				
-				#eval
-				TRAIN_FLAG = False
-				total_correct_preds = 0
-				start = 0
-				end = BATCH_SIZE
-				vali_epoch = np.random.randint(len(validation_imgs))
-				
-				patch_vali, label_vali = utils.get_patch(validation_imgs[vali_epoch], validation_labels[vali_epoch],
-				                                         PATCH_SIZE, STRIDE, IMG_SIZE, INCHANNEL, THRESHOLD)
-				idx = 0
-				for batch_idx in range(train_step):
-					idx += 1
-				
-					acc_batch, summaries = sess.run([accuracy, summary_op],
-					                           feed_dict={patch: patch_vali[start: end],
-					                                      labels: label_vali[start: end]})
-					writer.add_summary(summaries, global_step=step)
-					
-					total_correct_preds += acc_batch
-					start += BATCH_SIZE
-					end += BATCH_SIZE
-				print('Accuracy at epoch {0}: {1} '.format(epoch, total_correct_preds / (train_step*PATCH_SIZE)))
-
-					
-				
-
 
 def main(argv=None):
 	train()

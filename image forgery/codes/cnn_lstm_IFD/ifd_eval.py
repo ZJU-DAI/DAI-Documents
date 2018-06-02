@@ -13,6 +13,36 @@ import utils
 EVAL_INTERVAL_SECS = 100
 batch_size = ifd_train.BATCH_SIZE
 
+def update_actualFlag(gt_label):
+	scale = np.count_nonzero(gt_label) / (ifd_train.IMG_SIZE * ifd_train.IMG_SIZE)
+	if scale > 0.05:
+		actual_Flag = True
+	else:
+		actual_Flag = False
+	return actual_Flag
+
+def update_predictFlag(pred_l):
+	idx = 0
+	for i in range(pred_l.shape[0]):
+		label = pred_l[i]
+		if label[1] > 0.5:
+			idx += 1
+	scale = idx / pred_l.shape[0]
+	if idx != 0:
+		predict_Flag = True
+	else:
+		predict_Flag = False
+	return predict_Flag
+	
+
+def write2file(OUTFILE, stride, THRESHOLD, PATCH_SIZE, TP, FP, TN, FN, accuracy):
+	# write a record file
+	with open(ifd_train.OUTFILE, 'w') as f:
+		f.write(str(stride)+'\t'+str(THRESHOLD)+'\t'+str(PATCH_SIZE)+'\t'+str(TP)+'\t'+str(FP)
+		        +'\t'+str(TN)+'\t'+str(FN)+'\t'+str(accuracy))
+	return
+
+
 def eval(INPUT_DATA):
 	with tf.name_scope('data'):
 		print("###############get data#################")
@@ -40,6 +70,8 @@ def eval(INPUT_DATA):
 
 		while True:
 			with tf.Session() as sess:
+				utils.safe_mkdir(ifd_train.OUTFILE)
+				
 				print("############  load the model  ################")
 				ckpt = tf.train.get_checkpoint_state(ifd_train.MODEL_SAVE_PATH)
 				if ckpt and ckpt.model_checkpoint_path:
@@ -48,30 +80,64 @@ def eval(INPUT_DATA):
 					global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
 					
 					test_EPOCH = len(testing_imgs)
-					acc_total = 0
+					acc_total_test = 0
+					m_idx = 0
+					
+					TP = 0   #预测为正样本，实际为正
+					FP = 0   #预测为正样本，实际为负
+					TN = 0   #预测为负样本，实际为负
+					FN = 0   #预测为负样本，实际为正
+					predict_Flag = False
+					actual_Flag = False
+					
+					# one epoch one img
 					for epoch in range(test_EPOCH):
 						acc_total_epoch = 0
 						start = 0
 						end = ifd_train.BATCH_SIZE
+						pred_labels = []
 						# load data
-						patch_data, label_data = utils.get_patch(testing_imgs[epoch], testing_labels[epoch],
+						patch_data, label_data, m_idx = utils.get_patch(testing_imgs[epoch], testing_labels[epoch],
 						                                         ifd_train.PATCH_SIZE, ifd_train.STRIDE,
 						                                         ifd_train.IMG_SIZE,
-						                                         ifd_train.INCHANNEL, ifd_train.THRESHOLD)
+						                                         ifd_train.INCHANNEL, ifd_train.THRESHOLD, m_idx)
 						N_PATCH = patch_data.shape[0]
 						test_step = int(N_PATCH /ifd_train.BATCH_SIZE)
 				
 						for idx in range(test_step):
 							
-							accuracy_score = sess.run(accuracy, feed_dict={patch: patch_data[start: end],
+							acc_batch, pred_label = sess.run([accuracy, logits], feed_dict={patch: patch_data[start: end],
 					                                      labels:label_data[start: end]})
-							accuracy_score /= ifd_train.BATCH_SIZE
-							acc_total_epoch += accuracy_score
+							pred_labels.append(pred_label)
+							acc_total_epoch += acc_batch
 							start += ifd_train.BATCH_SIZE
 							end += ifd_train.BATCH_SIZE
-						print('Average Accuracy at step {0}: {1}'.format(epoch, acc_total_epoch / test_step))
-						acc_total += acc_total_epoch
-					print('Average Accuracy at step {0}: {1}'.format(global_step, acc_total / (test_EPOCH*test_step)))
+						acc_epoch = acc_total_epoch / (test_step* ifd_train.BATCH_SIZE)
+						print('Average Accuracy at step {0}: {1}'.format(epoch, acc_epoch))
+						acc_total_test += acc_epoch
+						
+						# update the actual_Flag
+						actual_Flag = update_actualFlag(testing_labels[epoch])
+						# update the predict_Flag
+						pred_l = np.asarray(pred_labels)
+						pred_l = np.reshape(pred_l, [-1, 2])
+						predict_Flag = update_predictFlag(pred_l)
+						#update TP, FP, TN, FN
+						if predict_Flag and actual_Flag:
+							TP += 1
+						elif predict_Flag and (not actual_Flag):
+							FP += 1
+						elif (not predict_Flag) and (not actual_Flag):
+							TN += 1
+						else:
+							FN += 1
+					
+					#the final accuracy
+					acc = acc_total_test / test_EPOCH
+					print('Average Accuracy at step {0}: {1}'.format(global_step, acc))
+				
+					write2file(ifd_train.OUTFILE, ifd_train.STRIDE, ifd_train.THRESHOLD, ifd_train.PATCH_SIZE,
+					           TP, FP, TN, FN, acc)
 				else:
 					print('No checkpoint file found')
 			return
