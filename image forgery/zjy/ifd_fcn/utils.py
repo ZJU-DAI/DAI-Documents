@@ -26,7 +26,7 @@ def gt_cut_to_patches(image, patch_size, strides, img_size, threshold, m_idx):
 	for i in range(patch_num):
 		for j in range(patch_num):
 			gt_patch = image[i * strides:i * strides + patch_size, j * strides:j * strides + patch_size]
-			gt_patch /= 255
+			# gt_patch /= 255
 			white_num = np.count_nonzero(gt_patch)
 			scale = white_num / (patch_size * patch_size)
 			#print(white_num, patch_size*patch_size, scale)

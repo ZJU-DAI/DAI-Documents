@@ -16,8 +16,8 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.6
 
 #define parameters
 IMG_SIZE = 586   #每张图片的大小
-STRIDE = 8      #图片中提取patch的strides
-BATCH_SIZE = 1089  #每批数据中patch数
+STRIDE = 32     #图片中提取patch的strides
+BATCH_SIZE = 64  #每批数据中patch数
 PATCH_SIZE = 64
 BLOCK_SIZE = 8
 INCHANNEL = 3
@@ -26,7 +26,7 @@ N_CLASSES = 2
 LEARNING_RATE_BASE = 0.8
 lEARNING_RATE_DECAY = 0.99
 
-LOSS_OUT_STEPS = 100   #间隔一定步数后输出一次loss，监控模型
+LOSS_OUT_STEPS = 10   #间隔一定步数后输出一次loss，监控模型
 SAVE_NUM = 10  #间隔多少张图片后，保存一次模型
 
 VALIDATION_PERCENTAGE = 10
@@ -34,7 +34,7 @@ TEST_PERCENTAGE = 10
 
 TRAIN_FLAG = False
 #INPUT_PATH = 'E:\\tf\\create_tfRecord\\npy-16\\'
-INPUT_DATA = 'npy/0529_IMD.npy'
+INPUT_DATA = '../npy/0601_IMD.npy'
 MODEL_SAVE_PATH ='checkpoints/cnn_lstm_IFD_8'
 MODEL_NAME = 'model.ckpt'
 GRAPH_PATH = './graphs/cnn_lstm_IFD'
@@ -60,7 +60,7 @@ def train():
 	patch = tf.placeholder(tf.float32, [BATCH_SIZE, PATCH_SIZE, PATCH_SIZE, INCHANNEL], name='input-patch')
 	labels = tf.placeholder(tf.int64, [BATCH_SIZE], name='patch-label')
 	pixel_labels = tf.placeholder(tf.int64, [BATCH_SIZE, PATCH_SIZE, PATCH_SIZE], name='pixel-label')
-	pixel_labels = tf.reshape(pixel_labels, shape=[BATCH_SIZE*PATCH_SIZE*PATCH_SIZE])
+	# pixel_labels = tf.reshape(pixel_labels, shape=[BATCH_SIZE*PATCH_SIZE*PATCH_SIZE])
 	#import the model
 	TRAIN_FLAG = True
 	logits, fcn5 = inf.inference(patch, N_CLASSES, TRAIN_FLAG)
@@ -76,6 +76,7 @@ def train():
 		pixel_logits = tf.reshape(fcn5, shape=[fcn5.shape[0]*fcn5.shape[1]*fcn5.shape[2], N_CLASSES])
 		print('pixel_logits shape: {}'.format(pixel_logits.get_shape().as_list()))
 		pixel_label_one_hot = tf.one_hot(pixel_labels, depth=N_CLASSES, on_value=1)
+		print('pixel_label_one_hot shape: {}'.format(pixel_label_one_hot.get_shape().as_list()))
 		entropy_pixel = tf.nn.softmax_cross_entropy_with_logits_v2(labels=pixel_label_one_hot, logits=pixel_logits)
 		loss_s = tf.reduce_mean(entropy_pixel, name='loss_s')/(BATCH_SIZE*PATCH_SIZE*PATCH_SIZE)
 		loss = loss_p+loss_s
@@ -113,30 +114,35 @@ def train():
 			print('#####  seccessfully load the saver #######')
 		step = global_step.eval()
 		print("############  start training  ################")
-		train_EPOCH = len(training_imgs)
+		num_img = len(training_imgs)
 		total_loss = 0
 		TRAIN_FLAG = True
-		for epoch in range(train_EPOCH):
+		for n_img in range(num_img):
 			start_time = time.time()
 			
 			m_idx = 0  # 统计一下每张图中被篡改过patch的数量
-			# load data
-			patch_data, label_data, pixel_label, m_idx = utils.get_patch(training_imgs[epoch], training_labels[epoch],
+			# 以img为单位输入切割后得patches数据
+			patch_data, label_data, pixel_label, m_idx = utils.get_patch(training_imgs[n_img], training_labels[n_img],
 			                                                PATCH_SIZE, STRIDE, IMG_SIZE, INCHANNEL, THRESHOLD, m_idx)
 			N_PATCH = patch_data.shape[0]
-			# print('Patch num: {0} Modified Patch num: {1}'.format(label_data.shape, m_idx))
+			print('Patch num: {0}'.format(N_PATCH))
+			#再分割为小batch送入inference
+			num_batch = int(N_PATCH/BATCH_SIZE)
+			start = 0
+			end = BATCH_SIZE
+			for batch_idx in range(num_batch):
 			
-			_, l, summaries, = sess.run([train_op, loss, summary_op],
-			                            feed_dict={patch: patch_data, labels: label_data,
-			                                       pixel_labels:pixel_label})
-			writer.add_summary(summaries, global_step=step)
-			if (step + 1) % LOSS_OUT_STEPS == 0:
-				print('Loss at step {0}: {1}'.format(step, l))
-			step += 1
-			total_loss += l
+				_, l, summaries, = sess.run([train_op, loss, summary_op],
+			                            feed_dict={patch: patch_data[start: end], labels: label_data[start: end],
+			                                       pixel_labels:pixel_label[start: end]})
+				writer.add_summary(summaries, global_step=step)
+				if (step + 1) % LOSS_OUT_STEPS == 0:
+					print('Loss at step {0}: {1}'.format(step, l))
+				step += 1
+				total_loss += l
 			# each SAVE_NUM epoches :calculate the accurancy on the validation data, and save the model
-			if (epoch + 1) % SAVE_NUM == 0:
-				print('Average loss at epoch {0}: {1}'.format(epoch, total_loss / epoch))
+			if (n_img + 1) % SAVE_NUM == 0:
+				print('Average loss at img {0}: {1}'.format(n_img, total_loss / (n_img*num_batch)))
 				print('Took: {0} seconds for one epoch'.format(time.time() - start_time))
 				saver.save(sess, save_path=os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=step)
 				
