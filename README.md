@@ -1,6 +1,6 @@
-# Deep-Learning-Documents
+# Deep Learning Documents
 
-本仓库用于存放同盾视觉项目学习资料
+本仓库用于存放DCD宁波实验室学习资料及成员分享会资料
 
 ## 书
 
