@@ -2,6 +2,9 @@
 
 本仓库用于存放DCD宁波实验室学习资料及成员分享会资料
 
+## Momodel.ai toturial
+https://momodel.github.io/docs/#/zh-cn/%E5%BC%80%E5%8F%91%E6%82%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AAModule
+
 ## 书
 
 深度学习：https://github.com/zsdonghao/deep-learning-book
@@ -27,16 +30,7 @@ v3: https://pjreddie.com/media/files/papers/YOLOv3.pdf
   
 主页:https://pjreddie.com/darknet/yolo/
 
-## 吴超老师学习资料
-
-1. Tensorflow课程
-
-    http://web.stanford.edu/class/cs20si/
-
-    跟着上面的slides 作业和阅读材料学
-
-2. GAN：    
-    https://arxiv.org/pdf/1701.00160.pdf
+GAN：https://arxiv.org/pdf/1701.00160.pdf
 
 ## Paper
 
