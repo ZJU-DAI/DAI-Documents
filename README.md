@@ -15,7 +15,7 @@ Member list (in alphabetic order):
 - [@Chao Wu](https://github.com/wuchaozju)
 - [@Jiaoyu Zhang](https://github.com/JiaoYuZhang)
 - [@Songlin Hu](https://github.com/lonelypine)
-- [@Wenzhuo Chen](https://github.com/cwzcwz)
+- [@Wenzhuo Cheng](https://github.com/cwzcwz)
 - [@Xiaojie Huang](https://github.com/Student-HXJ)
 - [@Xinkang Jia](https://github.com/Ereebay)
 - [@Zhaokai Zhang](https://github.com/jason2zhang)
