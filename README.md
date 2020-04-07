@@ -1,4 +1,4 @@
-# Documents for CV group
+# Documents for DAI group
 
 This repo stores the paper, slides and notes by our group members.
 
